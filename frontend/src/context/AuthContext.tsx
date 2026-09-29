@@ -8,15 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<User>;
-  register: (data: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    password: string;
-    password_confirm: string;
-    role: Role;
-    phone?: string;
-  }) => Promise<User>;
+  register: (data: any) => Promise<{ user: User; message?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -71,22 +63,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const register = async (data: {
-    first_name: string;
-    last_name: string;
-    email: string;
-    password: string;
-    password_confirm: string;
-    role: Role;
-    phone?: string;
-  }) => {
+  const register = async (data: any) => {
     setIsLoading(true);
     try {
       const res = await authApi.register(data);
-      localStorage.setItem('access_token', res.access);
-      localStorage.setItem('refresh_token', res.refresh);
-      setUser(res.user);
-      return res.user;
+      if (res.user?.is_verified) {
+        localStorage.setItem('access_token', res.access);
+        localStorage.setItem('refresh_token', res.refresh);
+        setUser(res.user);
+      }
+      return res;
     } finally {
       setIsLoading(false);
     }

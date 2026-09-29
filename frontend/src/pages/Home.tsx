@@ -81,8 +81,13 @@ export const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-20 pb-28 md:pt-28 md:pb-36 border-b border-slate-800 bg-gradient-to-b from-slate-900 via-slate-900/90 to-slate-950">
+      {/* Hero Section with Thematic Stadium Backdrop */}
+      <section
+        className="relative overflow-hidden pt-20 pb-28 md:pt-28 md:pb-36 border-b border-slate-800 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `linear-gradient(rgba(10, 15, 29, 0.88), rgba(2, 6, 23, 0.95)), url('https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=2000&q=80')`,
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-teal-500/10 border border-teal-500/30 text-teal-400 text-xs font-semibold mb-8">
             <ShieldCheck className="w-4 h-4" />

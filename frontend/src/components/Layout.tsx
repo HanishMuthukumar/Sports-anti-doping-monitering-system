@@ -19,7 +19,16 @@ import {
   User as UserIcon,
   PlusCircle,
   FlaskConical,
+  ShieldCheck,
 } from 'lucide-react';
+
+const roleBackgrounds: Record<string, string> = {
+  ADMINISTRATOR: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1920&q=80',
+  ATHLETE: 'https://images.unsplash.com/photo-1486286701208-1d58e9338013?auto=format&fit=crop&w=1920&q=80',
+  DOPING_CONTROL_OFFICER: 'https://images.unsplash.com/photo-1587280501635-68a0e82cd5ff?auto=format&fit=crop&w=1920&q=80',
+  LABORATORY_STAFF: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?auto=format&fit=crop&w=1920&q=80',
+  SPORTS_AUTHORITY: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1920&q=80',
+};
 
 export const Layout: React.FC = () => {
   const { user, role, logout } = useAuth();
@@ -52,6 +61,7 @@ export const Layout: React.FC = () => {
       case 'ADMINISTRATOR':
         return [
           { label: 'Overview', href: '/admin/dashboard', icon: BarChart3 },
+          { label: 'Verifications', href: '/admin/verifications', icon: ShieldCheck },
           { label: 'Users', href: '/admin/users', icon: Users },
           { label: 'Athletes', href: '/admin/athletes', icon: UserCheck },
           { label: 'Officers', href: '/admin/officers', icon: ShieldAlert },
@@ -227,9 +237,18 @@ export const Layout: React.FC = () => {
           </div>
         )}
 
-        {/* Content Outlet */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
-          <Outlet />
+        {/* Content Outlet with Thematic Page Backdrop */}
+        <main
+          className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative bg-cover bg-center bg-fixed transition-all"
+          style={{
+            backgroundImage: `linear-gradient(rgba(15, 23, 42, 0.93), rgba(2, 6, 23, 0.95)), url('${
+              role ? roleBackgrounds[role] : roleBackgrounds.ADMINISTRATOR
+            }')`,
+          }}
+        >
+          <div className="relative z-10 max-w-7xl mx-auto">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

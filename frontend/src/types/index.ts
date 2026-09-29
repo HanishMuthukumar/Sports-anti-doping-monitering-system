@@ -15,6 +15,7 @@ export interface User {
   phone?: string;
   role: Role;
   is_active: boolean;
+  is_verified?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -34,7 +35,7 @@ export interface Athlete {
   address?: string;
   emergency_contact?: string;
   emergency_phone?: string;
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
+  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'PENDING';
   created_at: string;
   updated_at: string;
 }
@@ -48,7 +49,7 @@ export interface DopingControlOfficer {
   certification_number?: string;
   organization?: string;
   phone?: string;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
   created_at: string;
   updated_at: string;
 }
@@ -62,7 +63,7 @@ export interface Laboratory {
   country?: string;
   phone?: string;
   email?: string;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
   created_at: string;
   updated_at: string;
 }
@@ -76,7 +77,7 @@ export interface LaboratoryStaff {
   staff_id: string;
   designation?: string;
   qualification?: string;
-  status: 'ACTIVE' | 'INACTIVE';
+  status: 'ACTIVE' | 'INACTIVE' | 'PENDING';
   created_at: string;
   updated_at: string;
 }

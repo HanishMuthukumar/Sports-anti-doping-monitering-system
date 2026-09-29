@@ -48,18 +48,69 @@ class LoginView(APIView):
 
 
 class RegisterView(APIView):
-    """POST /api/auth/register/ — public account self-registration."""
+    """POST /api/auth/register/ — public account self-registration requiring admin verification."""
     permission_classes = [AllowAny]
 
     def post(self, request):
         serializer = UserCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
+        user.is_verified = False  # Requires administrator verification
+        user.save(update_fields=['is_verified'])
+
+        # Auto-create profile shell for verification queue
+        role = user.role
+        try:
+            if role == Role.ATHLETE:
+                from athletes.models import Athlete
+                sport = request.data.get('sport', 'Athletics')
+                team = request.data.get('team', '')
+                coach = request.data.get('coach', '')
+                nationality = request.data.get('nationality', '')
+                Athlete.objects.create(
+                    user=user,
+                    athlete_id=f"ATH-{str(user.id)[:6].upper()}",
+                    sport=sport,
+                    team=team,
+                    coach=coach,
+                    nationality=nationality,
+                    status='INACTIVE',
+                )
+            elif role == Role.LABORATORY_STAFF:
+                from laboratories.models import Laboratory, LaboratoryStaff
+                lab_name = request.data.get('laboratory_name', 'National Anti-Doping Laboratory')
+                accreditation = request.data.get('accreditation_number', '')
+                lab, _ = Laboratory.objects.get_or_create(
+                    laboratory_name=lab_name,
+                    defaults={'accreditation_number': accreditation or f"WADA-LAB-{str(user.id)[:4].upper()}"}
+                )
+                LaboratoryStaff.objects.create(
+                    user=user,
+                    laboratory=lab,
+                    staff_id=f"LAB-{str(user.id)[:6].upper()}",
+                    designation=request.data.get('designation', 'Laboratory Analyst'),
+                    status='INACTIVE',
+                )
+            elif role == Role.DOPING_CONTROL_OFFICER:
+                from officers.models import DopingControlOfficer
+                cert = request.data.get('certification_number', f"DCO-CERT-{str(user.id)[:4].upper()}")
+                org = request.data.get('organization', 'National Anti-Doping Agency')
+                DopingControlOfficer.objects.create(
+                    user=user,
+                    officer_id=f"DCO-{str(user.id)[:6].upper()}",
+                    certification_number=cert,
+                    organization=org,
+                    status='INACTIVE',
+                )
+        except Exception:
+            pass  # User is still registered and will be verified by admin
+
         refresh = RefreshToken.for_user(user)
         return Response({
             'access': str(refresh.access_token),
             'refresh': str(refresh),
             'user': UserSerializer(user).data,
+            'message': 'Registration submitted successfully. Account pending administrator verification.',
         }, status=status.HTTP_201_CREATED)
 
 
@@ -136,3 +187,42 @@ class UserViewSet(viewsets.ModelViewSet):
         user.set_password(serializer.validated_data['new_password'])
         user.save()
         return Response({'detail': 'Password changed.'})
+
+    @action(detail=False, methods=['get'], permission_classes=[IsAdministrator])
+    def pending(self, request):
+        """GET /api/users/pending/ — get all users awaiting admin verification."""
+        pending_users = User.objects.filter(is_verified=False).order_by('-created_at')
+        return Response(UserSerializer(pending_users, many=True).data)
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdministrator])
+    def verify(self, request, pk=None):
+        """POST /api/users/{id}/verify/ — verify and activate a user and their profile."""
+        user = self.get_object()
+        user.is_verified = True
+        user.is_active = True
+        user.save(update_fields=['is_verified', 'is_active'])
+
+        # Activate linked profiles
+        if hasattr(user, 'athlete_profile'):
+            user.athlete_profile.status = 'ACTIVE'
+            user.athlete_profile.save(update_fields=['status'])
+        if hasattr(user, 'lab_staff_profile'):
+            user.lab_staff_profile.status = 'ACTIVE'
+            user.lab_staff_profile.save(update_fields=['status'])
+        if hasattr(user, 'officer_profile'):
+            user.officer_profile.status = 'ACTIVE'
+            user.officer_profile.save(update_fields=['status'])
+
+        return Response({
+            'detail': f'User {user.get_full_name()} verified and activated successfully.',
+            'user': UserSerializer(user).data,
+        })
+
+    @action(detail=True, methods=['post'], permission_classes=[IsAdministrator])
+    def reject(self, request, pk=None):
+        """POST /api/users/{id}/reject/ — reject a user registration."""
+        user = self.get_object()
+        user.is_verified = False
+        user.is_active = False
+        user.save(update_fields=['is_verified', 'is_active'])
+        return Response({'detail': f'User {user.get_full_name()} registration rejected.'})

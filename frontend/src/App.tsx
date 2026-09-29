@@ -10,6 +10,7 @@ import { Register } from './pages/Register';
 
 // Admin pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminVerifications } from './pages/admin/AdminVerifications';
 import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminUserCreate } from './pages/admin/AdminUserCreate';
 import { AdminAthletes } from './pages/admin/AdminAthletes';
@@ -80,6 +81,7 @@ export const App: React.FC = () => {
           >
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
+            <Route path="verifications" element={<AdminVerifications />} />
             <Route path="users" element={<AdminUsers />} />
             <Route path="users/create" element={<AdminUserCreate />} />
             <Route path="athletes" element={<AdminAthletes />} />

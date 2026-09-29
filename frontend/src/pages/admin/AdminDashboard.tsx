@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { reportApi } from '../../api/operationsApi';
+import { userApi } from '../../api/entitiesApi';
 import { DashboardSummary } from '../../types';
 import { StatCard } from '../../components/shared/StatCard';
 import { LoadingSpinner } from '../../components/shared/LoadingSpinner';
@@ -13,17 +15,24 @@ import {
   TestTubes,
   AlertTriangle,
   Flame,
+  Clock,
+  ArrowRight,
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
   const [data, setData] = useState<DashboardSummary | null>(null);
+  const [pendingCount, setPendingCount] = useState<number>(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadSummary = async () => {
       try {
-        const res = await reportApi.getDashboardSummary();
+        const [res, pending] = await Promise.all([
+          reportApi.getDashboardSummary(),
+          userApi.getPending(),
+        ]);
         setData(res);
+        setPendingCount(pending.length);
       } catch (err) {
         console.error(err);
       } finally {
@@ -43,12 +52,41 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Programme Overview</h2>
-        <p className="text-sm text-slate-500">
-          Live statistics across testing operations, chain of custody, and rule violations.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-white tracking-tight">Programme Overview</h2>
+          <p className="text-sm text-slate-300">
+            Live statistics across testing operations, chain of custody, and rule violations.
+          </p>
+        </div>
+        {pendingCount > 0 && (
+          <Link
+            to="/admin/verifications"
+            className="inline-flex items-center space-x-2 px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-xs font-bold transition-all shadow-md"
+          >
+            <Clock className="w-4 h-4 text-amber-400" />
+            <span>{pendingCount} Verifications Awaiting Review</span>
+            <ArrowRight className="w-3.5 h-3.5 ml-1" />
+          </Link>
+        )}
       </div>
+
+      {pendingCount > 0 && (
+        <div className="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center justify-between">
+          <div className="flex items-center space-x-3 text-amber-200 text-sm">
+            <Clock className="w-5 h-5 text-amber-400 flex-shrink-0" />
+            <span>
+              <strong>Action Required:</strong> {pendingCount} new user(s) (Athletes, Lab Staff, or Officers) have registered and require administrator accreditation verification before their accounts are unlocked.
+            </span>
+          </div>
+          <Link
+            to="/admin/verifications"
+            className="px-4 py-1.5 bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold rounded-lg text-xs whitespace-nowrap ml-4 transition-colors"
+          >
+            Review Now
+          </Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <StatCard

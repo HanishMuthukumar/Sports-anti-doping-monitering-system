@@ -114,6 +114,66 @@ export const userApi = {
     const res = await api.patch(`/api/users/${id}/`, payload);
     return res.data as User;
   },
+  getPending: async () => {
+    try {
+      const res = await api.get('/api/users/pending/');
+      const data = res.data;
+      return (data.results || data) as User[];
+    } catch {
+      const stored = localStorage.getItem('mock_users');
+      const users: User[] = stored ? JSON.parse(stored) : defaultUsers;
+      const customStr = localStorage.getItem('custom_registered_users');
+      const custom: User[] = customStr ? JSON.parse(customStr) : [];
+      const combined = [...users, ...custom];
+      return combined.filter((u) => u.is_verified === false);
+    }
+  },
+  verifyUser: async (id: string) => {
+    try {
+      const res = await api.post(`/api/users/${id}/verify/`);
+      return res.data;
+    } catch {
+      const updateList = (key: string) => {
+        const str = localStorage.getItem(key);
+        if (!str) return;
+        const list = JSON.parse(str);
+        const updated = list.map((u: any) =>
+          u.id === id || u.user?.id === id
+            ? { ...u, is_verified: true, is_active: true, status: 'ACTIVE' }
+            : u
+        );
+        localStorage.setItem(key, JSON.stringify(updated));
+      };
+      updateList('mock_users');
+      updateList('custom_registered_users');
+      updateList('mock_athletes');
+      updateList('mock_officers');
+      updateList('mock_laboratories');
+      updateList('mock_staff');
+      return { detail: 'User verified and activated.' };
+    }
+  },
+  rejectUser: async (id: string) => {
+    try {
+      const res = await api.post(`/api/users/${id}/reject/`);
+      return res.data;
+    } catch {
+      const updateList = (key: string) => {
+        const str = localStorage.getItem(key);
+        if (!str) return;
+        const list = JSON.parse(str);
+        const updated = list.map((u: any) =>
+          u.id === id || u.user?.id === id
+            ? { ...u, is_verified: false, is_active: false, status: 'INACTIVE' }
+            : u
+        );
+        localStorage.setItem(key, JSON.stringify(updated));
+      };
+      updateList('mock_users');
+      updateList('custom_registered_users');
+      return { detail: 'User registration rejected.' };
+    }
+  },
   deactivate: async (id: string) => {
     try {
       const res = await api.delete(`/api/users/${id}/`);
