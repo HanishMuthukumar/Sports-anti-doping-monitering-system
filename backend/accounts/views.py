@@ -47,6 +47,22 @@ class LoginView(APIView):
         })
 
 
+class RegisterView(APIView):
+    """POST /api/auth/register/ — public account self-registration."""
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        refresh = RefreshToken.for_user(user)
+        return Response({
+            'access': str(refresh.access_token),
+            'refresh': str(refresh),
+            'user': UserSerializer(user).data,
+        }, status=status.HTTP_201_CREATED)
+
+
 class LogoutView(APIView):
     """POST /api/auth/logout/ — blacklist the refresh token."""
     permission_classes = [IsAuthenticated]

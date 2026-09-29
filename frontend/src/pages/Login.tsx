@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useAuth, roleHomeMap } from '../context/AuthContext';
-import { ShieldAlert, AlertCircle, ArrowRight, Lock, Mail } from 'lucide-react';
+import { ShieldAlert, AlertCircle, ArrowRight, Lock, Mail, ArrowLeft } from 'lucide-react';
 import { LoadingSpinner } from '../components/shared/LoadingSpinner';
 
 const loginSchema = z.object({
@@ -14,14 +14,6 @@ const loginSchema = z.object({
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
-const demoAccounts = [
-  { role: 'Administrator', email: 'admin@demo.sadms', name: 'System Admin' },
-  { role: 'Athlete', email: 'athlete@demo.sadms', name: 'Aarav Mehta' },
-  { role: 'Officer (DCO)', email: 'officer@demo.sadms', name: 'Jon Bell' },
-  { role: 'Laboratory Staff', email: 'lab@demo.sadms', name: 'Dr. Elena Rossi' },
-  { role: 'Sports Authority', email: 'authority@demo.sadms', name: 'Nia Okafor' },
-];
-
 export const Login: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -30,13 +22,12 @@ export const Login: React.FC = () => {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      email: 'admin@demo.sadms',
-      password: 'Demo@1234',
+      email: '',
+      password: '',
     },
   });
 
@@ -47,28 +38,28 @@ export const Login: React.FC = () => {
       navigate(roleHomeMap[user.role]);
     } catch (err: any) {
       setErrorMessage(
-        err.response?.data?.detail || 'Authentication failed. Please check your credentials.'
+        err.response?.data?.detail || err.message || 'Authentication failed. Please check your credentials.'
       );
     }
-  };
-
-  const setDemoCredentials = (email: string) => {
-    setValue('email', email);
-    setValue('password', 'Demo@1234');
-    setErrorMessage(null);
   };
 
   return (
     <div className="min-h-screen bg-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
-        <div className="inline-flex p-3 bg-teal-500 rounded-2xl text-slate-950 mb-4 shadow-lg shadow-teal-500/20">
-          <ShieldAlert className="w-10 h-10" />
+        <Link to="/" className="inline-flex items-center text-xs text-slate-400 hover:text-white mb-6">
+          <ArrowLeft className="w-4 h-4 mr-1" />
+          Back to Home Page
+        </Link>
+        <div className="block">
+          <div className="inline-flex p-3 bg-teal-500 rounded-2xl text-slate-950 mb-3 shadow-lg shadow-teal-500/20">
+            <ShieldAlert className="w-10 h-10" />
+          </div>
         </div>
         <h2 className="text-3xl font-extrabold text-white tracking-tight">
-          Sports Anti-Doping Monitor
+          Portal Sign In
         </h2>
         <p className="mt-2 text-sm text-slate-400">
-          Official Athlete & Chain-of-Custody Compliance Portal
+          Sports Anti-Doping Monitoring Platform
         </p>
       </div>
 
@@ -93,6 +84,7 @@ export const Login: React.FC = () => {
                   {...register('email')}
                   className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
                   placeholder="name@domain.com"
+                  autoComplete="email"
                 />
               </div>
               {errors.email && (
@@ -111,6 +103,7 @@ export const Login: React.FC = () => {
                   {...register('password')}
                   className="block w-full pl-10 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 text-sm"
                   placeholder="••••••••"
+                  autoComplete="current-password"
                 />
               </div>
               {errors.password && (
@@ -134,24 +127,13 @@ export const Login: React.FC = () => {
             </button>
           </form>
 
-          {/* Development Seed Accounts Switcher */}
-          <div className="mt-6 pt-6 border-t border-slate-200">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block mb-2 text-center">
-              Quick Switch Role (Development Demo)
-            </span>
-            <div className="grid grid-cols-1 gap-2">
-              {demoAccounts.map((acc) => (
-                <button
-                  key={acc.role}
-                  type="button"
-                  onClick={() => setDemoCredentials(acc.email)}
-                  className="text-left px-3 py-2 text-xs rounded-lg border border-slate-200 hover:border-teal-500 hover:bg-teal-50/50 transition-colors flex justify-between items-center"
-                >
-                  <span className="font-semibold text-slate-700">{acc.role}</span>
-                  <span className="text-slate-400">{acc.email}</span>
-                </button>
-              ))}
-            </div>
+          <div className="mt-6 pt-6 border-t border-slate-200 text-center">
+            <p className="text-sm text-slate-600">
+              New athlete or staff member?{' '}
+              <Link to="/register" className="font-semibold text-teal-600 hover:text-teal-700">
+                Register here
+              </Link>
+            </p>
           </div>
         </div>
       </div>

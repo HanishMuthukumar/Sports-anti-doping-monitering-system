@@ -22,7 +22,7 @@ export const OfficerTestDetail: React.FC = () => {
       const t = await testApi.get(id);
       setTest(t);
       const allSamples = await sampleApi.list();
-      const s = allSamples.find((item) => item.doping_test === id || item.test_number === t.test_number);
+      const s = allSamples.find((item: any) => item.doping_test === id || item.test_number === t.test_number);
       if (s) setSample(s);
     } catch (err) {
       console.error(err);

@@ -4,7 +4,9 @@ import { AuthProvider, useAuth, roleHomeMap } from './context/AuthContext';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { RoleProtectedRoute } from './components/RoleProtectedRoute';
 import { Layout } from './components/Layout';
+import { Home } from './pages/Home';
 import { Login } from './pages/Login';
+import { Register } from './pages/Register';
 
 // Admin pages
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -60,8 +62,10 @@ export const App: React.FC = () => {
     <AuthProvider>
       <Router>
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<HomeRedirect />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/portal" element={<HomeRedirect />} />
 
           {/* Administrator routes */}
           <Route

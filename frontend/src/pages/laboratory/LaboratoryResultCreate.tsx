@@ -45,7 +45,7 @@ export const LaboratoryResultCreate: React.FC = () => {
       try {
         const res = await sampleApi.list();
         // Eligible samples: UNDER_ANALYSIS or RECEIVED
-        setSamples(res.filter((s) => s.status === 'UNDER_ANALYSIS' || s.status === 'RECEIVED'));
+        setSamples(res.filter((s: any) => s.status === 'UNDER_ANALYSIS' || s.status === 'RECEIVED'));
       } catch (err) {
         console.error(err);
       } finally {
