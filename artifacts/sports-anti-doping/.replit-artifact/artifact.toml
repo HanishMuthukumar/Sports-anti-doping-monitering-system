@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Sports Anti-Doping Monitor"
+description = "A role-based sports anti-doping operations system for managing athletes, tests, samples, laboratory analysis, violations, notifications, and authority review workflows."
+version = "1.0.0"
+id = "artifacts/sports-anti-doping"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 22328
+
+[services.development]
+run = "pnpm --filter @workspace/sports-anti-doping run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/sports-anti-doping", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/sports-anti-doping/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "22328"
+BASE_PATH = "/"
