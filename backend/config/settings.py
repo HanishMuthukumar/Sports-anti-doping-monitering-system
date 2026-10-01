@@ -85,8 +85,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # ===========================================================
 # DATABASE — Supabase PostgreSQL
 # ===========================================================
+USE_SQLITE = config('USE_SQLITE', default=False, cast=bool)
 db_password = config('DATABASE_PASSWORD', default='')
-if 'test' in sys.argv or 'pytest' in sys.modules or not db_password:
+if 'test' in sys.argv or 'pytest' in sys.modules or USE_SQLITE or not db_password:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
